@@ -34,10 +34,8 @@
 
 #pragma mark - Instance Methods
 
-- (NSString *)stringByConvertingHTMLToPlainText {
-	
-	// Pool
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+- (NSString *)stringByConvertingHTMLToPlainText 
+{
 	
 	// Character sets
 	NSCharacterSet *stopCharacters = [NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"< \t\n\r%C%C%C%C", 0x0085, 0x000C, 0x2028, 0x2029]];
@@ -115,42 +113,34 @@
 	} while (![scanner isAtEnd]);
 	
 	// Cleanup
-	[scanner release];
-	
-	// Decode HTML entities and return
-	NSString *retString = [[result stringByDecodingHTMLEntities] retain];
-	[result release];
-	
-	// Drain
-	[pool drain];
-	
+
 	// Return
-	return [retString autorelease];
+	return result;
 	
 }
 
-- (NSString *)stringByDecodingHTMLEntities {
+- (NSString *)stringByDecodingHTMLEntities 
+{
     // Can return self so create new string if we're a mutable string
     return [NSString stringWithString:[self gtm_stringByUnescapingFromHTML]];
 }
 
 
-- (NSString *)stringByEncodingHTMLEntities {
+- (NSString *)stringByEncodingHTMLEntities 
+{
     // Can return self so create new string if we're a mutable string
     return [NSString stringWithString:[self gtm_stringByEscapingForAsciiHTML]];
 }
 
-- (NSString *)stringByEncodingHTMLEntities:(BOOL)isUnicode {
+- (NSString *)stringByEncodingHTMLEntities:(BOOL)isUnicode 
+{  
     // Can return self so create new string if we're a mutable string
     return [NSString stringWithString:(isUnicode ? [self gtm_stringByEscapingForHTML] : [self gtm_stringByEscapingForAsciiHTML])];
 }
 
-- (NSString *)stringWithNewLinesAsBRs {
-	
-	// Pool
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	// Strange New lines:
+- (NSString *)stringWithNewLinesAsBRs 
+{
+		// Strange New lines:
 	//	Next Line, U+0085
 	//	Form Feed, U+000C
 	//	Line Separator, U+2028
@@ -164,7 +154,8 @@
 	NSCharacterSet *newLineCharacters = [NSCharacterSet characterSetWithCharactersInString:
 										 [NSString stringWithFormat:@"\n\r%C%C%C%C", 0x0085, 0x000C, 0x2028, 0x2029]];
 	// Scan
-	do {
+	do 
+  {
 		
 		// Get non new line characters
 		temp = nil;
@@ -173,16 +164,20 @@
 		temp = nil;
 		
 		// Add <br /> s
-		if ([scanner scanString:@"\r\n" intoString:nil]) {
-			
+		if ([scanner scanString:@"\r\n" intoString:nil]) 
+    {
 			// Combine \r\n into just 1 <br />
 			[result appendString:@"<br />"];
-			
-		} else if ([scanner scanCharactersFromSet:newLineCharacters intoString:&temp]) {
+		} 
+    else 
+      if ([scanner scanCharactersFromSet:newLineCharacters intoString:&temp]) 
+      {
 			
 			// Scan other new line characters and add <br /> s
-			if (temp) {
-				for (NSUInteger i = 0; i < temp.length; i++) {
+			if (temp) 
+      {
+				for (NSUInteger i = 0; i < temp.length; i++) 
+        {
 					[result appendString:@"<br />"];
 				}
 			}
@@ -192,22 +187,14 @@
 	} while (![scanner isAtEnd]);
 	
 	// Cleanup & return
-	[scanner release];
-	NSString *retString = [[NSString stringWithString:result] retain];
-	[result release];
-	
-	// Drain
-	[pool drain];
 	
 	// Return
-	return [retString autorelease];
+	return result;
 	
 }
 
-- (NSString *)stringByRemovingNewLinesAndWhitespace {
-	
-	// Pool
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+- (NSString *)stringByRemovingNewLinesAndWhitespace 
+{
 	
 	// Strange New lines:
 	//	Next Line, U+0085
@@ -223,7 +210,8 @@
 	NSCharacterSet *newLineAndWhitespaceCharacters = [NSCharacterSet characterSetWithCharactersInString:
 													  [NSString stringWithFormat:@" \t\n\r%C%C%C%C", 0x0085, 0x000C, 0x2028, 0x2029]];
 	// Scan
-	while (![scanner isAtEnd]) {
+	while (![scanner isAtEnd]) 
+  {
 		
 		// Get non new line or whitespace characters
 		temp = nil;
@@ -239,39 +227,29 @@
 	}
 	
 	// Cleanup
-	[scanner release];
-	
+		
 	// Return
-	NSString *retString = [[NSString stringWithString:result] retain];
-	[result release];
-	
-	// Drain
-	[pool drain];
-	
-	// Return
-	return [retString autorelease];
+	return result;
 	
 }
 
-- (NSString *)stringByLinkifyingURLs {
+- (NSString *)stringByLinkifyingURLs 
+{
     if (!NSClassFromString(@"NSRegularExpression")) return self;
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  
     NSString *pattern = @"(?<!=\")\\b((http|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%%&amp;:/~\\+#]*[\\w\\-\\@?^=%%&amp;/~\\+#])?)";
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
-    NSString *modifiedString = [[regex stringByReplacingMatchesInString:self options:0 range:NSMakeRange(0, [self length])
-                                                           withTemplate:@"<a href=\"$1\" class=\"linkified\">$1</a>"] retain];
-    [pool drain];
-    return [modifiedString autorelease];
+    NSString *modifiedString = [regex stringByReplacingMatchesInString:self options:0 range:NSMakeRange(0, [self length])
+                                                           withTemplate:@"<a href=\"$1\" class=\"linkified\">$1</a>"];
+    return modifiedString;
 }
 
 - (NSString *)stringByStrippingTags {
 	
-	// Pool
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
 	// Find first & and short-cut if we can
 	NSUInteger ampIndex = [self rangeOfString:@"<" options:NSLiteralSearch].location;
-	if (ampIndex == NSNotFound) {
+	if (ampIndex == NSNotFound) 
+  {
 		return [NSString stringWithString:self]; // return copy of string as no tags found
 	}
 	
@@ -280,7 +258,8 @@
 	[scanner setCharactersToBeSkipped:nil];
 	NSMutableSet *tags = [[NSMutableSet alloc] init];
 	NSString *tag;
-	do {
+	do 
+  {
 		
 		// Scan up to <
 		tag = nil;
@@ -288,10 +267,10 @@
 		[scanner scanUpToString:@">" intoString:&tag];
 		
 		// Add to set
-		if (tag) {
+		if (tag) 
+    {
 			NSString *t = [[NSString alloc] initWithFormat:@"%@>", tag];
 			[tags addObject:t];
-			[t release];
 		}
 		
 	} while (![scanner isAtEnd]);
@@ -325,17 +304,12 @@
 	}
 	
 	// Remove multi-spaces and line breaks
-	finalString = [[result stringByRemovingNewLinesAndWhitespace] retain];
+	finalString = [result stringByRemovingNewLinesAndWhitespace];
 	
 	// Cleanup
-	[result release];
-	[tags release];
-	
-	// Drain
-	[pool drain];
 	
 	// Return
-    return [finalString autorelease];
+    return finalString;
 	
 }
 
